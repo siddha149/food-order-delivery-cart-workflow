@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+  <process id="orderCart" name="order cart" isExecutable="true">
+    <startEvent id="startEvent1" flowable:formFieldValidation="true"></startEvent>
+    <userTask id="updateItem" name="Update Item" flowable:formKey="updateItemForm" flowable:formFieldValidation="true"></userTask>
+    <exclusiveGateway id="sid-A9F89CA8-5179-499C-8588-93F71F157E39"></exclusiveGateway>
+    <endEvent id="sid-8265178E-CF5E-4E6D-966C-B2C604E55856" name="Empty Cart"></endEvent>
+    <userTask id="sid-6ECA59FA-1D7A-4F91-BBA9-D119C5280FA3" name="Apply Offer" flowable:formFieldValidation="true"></userTask>
+    <exclusiveGateway id="sid-ACBA1973-0864-454D-AA7E-6FD57B11C352"></exclusiveGateway>
+    <userTask id="addDeliveryLocation" name="Add delivery location" flowable:formFieldValidation="true"></userTask>
+    <serviceTask id="validateOffer" name="Validate offer" flowable:class="com.zolve.test.foodorderworkflow.delegate.ValidateOfferDelegate"></serviceTask>
+    <exclusiveGateway id="sid-A19837F8-F596-41AB-8280-3F92CE10B353"></exclusiveGateway>
+    <serviceTask id="cartExpired" name="Cart Expired" flowable:class="com.zolve.test.foodorderworkflow.delegate.CartExpiredDelegate"></serviceTask>
+    <endEvent id="sid-D59D53A6-AA1B-457D-8B9F-728D198D419E" name="Cart Expired"></endEvent>
+    <sequenceFlow id="sid-892B889C-83B8-4F98-9BA7-22849FD83B24" sourceRef="applyOfferTimer" targetRef="cartExpired"></sequenceFlow>
+    <serviceTask id="emptyCart" name="Empty Cart" flowable:class="com.zolve.test.foodorderworkflow.delegate.EmptyCartDelegate"></serviceTask>
+    <sequenceFlow id="sid-098B776E-33C5-477D-A349-13A21C76D22E" sourceRef="emptyCart" targetRef="sid-8265178E-CF5E-4E6D-966C-B2C604E55856"></sequenceFlow>
+    <serviceTask id="validateLocation" name="Validate Delivery Location" flowable:class="com.zolve.test.foodorderworkflow.delegate.DeliveryLocationValidationDelegate"></serviceTask>
+    <exclusiveGateway id="sid-A73A308E-98CE-4B97-BB53-5F88C02A5AA5"></exclusiveGateway>
+    <serviceTask id="undeliverableLocation" name="Undeliverable Location" flowable:class="com.zolve.test.foodorderworkflow.delegate.UndeliverableLocationDelegate"></serviceTask>
+    <serviceTask id="payamentWorkflow" name="Payment Workflow
+" flowable:class="com.zolve.test.foodorderworkflow.delegate.PaymentWorkflowDelegate"></serviceTask>
+    <sequenceFlow id="sid-093A6816-E750-4A6E-82FD-1B7352DA12A7" sourceRef="validateOffer" targetRef="sid-A19837F8-F596-41AB-8280-3F92CE10B353"></sequenceFlow>
+    <sequenceFlow id="sid-DAF6427A-3EB8-4819-8F46-0507BBE5CF46" sourceRef="startEvent1" targetRef="updateItem"></sequenceFlow>
+    <boundaryEvent id="applyOfferTimer" name="Apply Offer Timer" attachedToRef="sid-6ECA59FA-1D7A-4F91-BBA9-D119C5280FA3" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>PT1M</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="sid-D058BEFA-E36B-4816-B0F4-0B071C09CE3C" sourceRef="sid-6ECA59FA-1D7A-4F91-BBA9-D119C5280FA3" targetRef="sid-ACBA1973-0864-454D-AA7E-6FD57B11C352"></sequenceFlow>
+    <sequenceFlow id="sid-F08BFC85-F2E5-4C10-AD01-EDFA75EFA9F8" sourceRef="validateLocation" targetRef="sid-A73A308E-98CE-4B97-BB53-5F88C02A5AA5"></sequenceFlow>
+    <endEvent id="sid-3E49214B-6620-4E21-97E3-477145263098" name="Order Cart Workflow Completed"></endEvent>
+    <sequenceFlow id="sid-41DDE6C9-0959-4FFF-8D11-E64A630446CC" sourceRef="payamentWorkflow" targetRef="sid-3E49214B-6620-4E21-97E3-477145263098"></sequenceFlow>
+    <endEvent id="sid-357F4E6D-11F4-46AC-ABE6-E6BA3B0C93D6" name="Undeliverable location"></endEvent>
+    <sequenceFlow id="sid-DE8A1F1D-75A3-4DF1-B292-93B03206EDC4" sourceRef="undeliverableLocation" targetRef="sid-357F4E6D-11F4-46AC-ABE6-E6BA3B0C93D6"></sequenceFlow>
+    <sequenceFlow id="sid-1240DC44-31D8-487A-A5FA-99040890377A" sourceRef="addressLocationExpiry" targetRef="cartExpired"></sequenceFlow>
+    <boundaryEvent id="addressLocationExpiry" name="Address Location Expiry" attachedToRef="addDeliveryLocation" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>PT1M</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="sid-4DB9414A-19E9-4EF5-90DB-D1522B77B1A5" sourceRef="updateItem" targetRef="sid-A9F89CA8-5179-499C-8588-93F71F157E39"></sequenceFlow>
+    <sequenceFlow id="sid-BE235F7C-3815-4F59-94EE-3B3903181520" name="no item" sourceRef="sid-A9F89CA8-5179-499C-8588-93F71F157E39" targetRef="emptyCart">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${itemCount==0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-676B434A-A8B4-4360-B779-9737B123DB74" name="valid item" sourceRef="sid-A9F89CA8-5179-499C-8588-93F71F157E39" targetRef="sid-6ECA59FA-1D7A-4F91-BBA9-D119C5280FA3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${itemCount>0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-3B15E033-F857-494F-A7ED-B90696D1F320" sourceRef="addDeliveryLocation" targetRef="validateLocation"></sequenceFlow>
+    <sequenceFlow id="sid-2D9B6BF9-3F63-4A92-8643-9807B7DE2E2E" name="Deliverable" sourceRef="sid-A73A308E-98CE-4B97-BB53-5F88C02A5AA5" targetRef="payamentWorkflow">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${deliverable}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-16A2F756-B1E9-4EDE-86FC-305B6C04D263" name="Undeliverable" sourceRef="sid-A73A308E-98CE-4B97-BB53-5F88C02A5AA5" targetRef="undeliverableLocation">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!deliverable}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-510E55EE-71BC-42EA-8535-0CE18E9BCE4D" sourceRef="cartExpired" targetRef="sid-D59D53A6-AA1B-457D-8B9F-728D198D419E"></sequenceFlow>
+    <boundaryEvent id="updateItemExpiry" name="Update Item Expiry" attachedToRef="updateItem" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>PT1M</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="sid-4788DAFC-5D77-4A91-A6C0-8184C2B45A1C" sourceRef="updateItemExpiry" targetRef="cartExpired"></sequenceFlow>
+    <sequenceFlow id="sid-4E3289E2-E09D-491A-A547-CB494FECB940" name="offer applied" sourceRef="sid-ACBA1973-0864-454D-AA7E-6FD57B11C352" targetRef="validateOffer">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${applyOffer}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-A7198049-1FA0-47A1-B621-F3ECEBCA8819" name="offer not applied" sourceRef="sid-ACBA1973-0864-454D-AA7E-6FD57B11C352" targetRef="addDeliveryLocation">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!applyOffer}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-D4987537-5CE5-4DEE-95C6-D39A2407605D" name="valid offer" sourceRef="sid-A19837F8-F596-41AB-8280-3F92CE10B353" targetRef="addDeliveryLocation">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${validOffer}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-9E2F32EB-CF89-4BAF-A9AE-427DBB382AF4" name="invalid offer" sourceRef="sid-A19837F8-F596-41AB-8280-3F92CE10B353" targetRef="sid-6ECA59FA-1D7A-4F91-BBA9-D119C5280FA3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!validOffer}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+</definitions>
